@@ -99,7 +99,7 @@ class HyperspaceEffect {
                 angle: Math.random() * Math.PI * 2,
                 rotation: 0,
                 char: this.getRandomChar(),
-                opacity: 0.5 + Math.random() * 0.5, // Brighter
+                opacity: 0.8 + Math.random() * 0.2, // Even brighter
                 z: Math.random() * 100
             });
         }
@@ -107,13 +107,13 @@ class HyperspaceEffect {
     
     initStarfield() {
         // Create starfield particles for hyperspace effect
-        for (let i = 0; i < 400; i++) {
+        for (let i = 0; i < 600; i++) {
             this.starfieldParticles.push({
                 x: Math.random() * this.canvas3D.width,
                 y: Math.random() * this.canvas3D.height,
                 z: Math.random() * 1000, // Depth
                 speed: 10 + Math.random() * 20,
-                size: 1 + Math.random() * 3
+                size: 1.5 + Math.random() * 3.5
             });
         }
     }
@@ -306,10 +306,10 @@ class HyperspaceEffect {
                 const trailX = particle.x - dirX * trailLength;
                 const trailY = particle.y - dirY * trailLength;
                 
-                // Create gradient for trail (white)
+                // Create gradient for trail (pure white, thinner)
                 const gradient = ctx.createLinearGradient(trailX, trailY, particle.x, particle.y);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-                gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+                gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.7)');
                 gradient.addColorStop(1, 'rgba(255, 255, 255, 0.9)');
                 
                 ctx.beginPath();
@@ -317,7 +317,7 @@ class HyperspaceEffect {
                 ctx.lineTo(particle.x, particle.y);
                 
                 ctx.strokeStyle = gradient;
-                ctx.lineWidth = particle.size / 6; // Thinner lines
+                ctx.lineWidth = particle.size / 10; // Even thinner lines
                 ctx.lineCap = 'round';
                 ctx.stroke();
                 
@@ -384,8 +384,8 @@ class HyperspaceEffect {
             const x = star.x * scale;
             const y = star.y * scale;
             
-            // Draw star
-            const brightness = 0.3 + Math.sin(Date.now() * 0.001 + star.x) * 0.2;
+            // Draw star (brighter)
+            const brightness = 0.5 + Math.sin(Date.now() * 0.001 + star.x) * 0.3;
             ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
             ctx.beginPath();
             ctx.arc(x, y, star.size * scale, 0, Math.PI * 2);
@@ -489,8 +489,8 @@ class HyperspaceEffect {
         // Reset shadow
         ctx.shadowBlur = 0;
         
-        // Symbols are already drawn in drawSymbolsOnly
-        // this.drawFloatingSymbols(centerX, centerY, 1);
+        // Draw additional symbols floating around the cube
+        this.drawFloatingSymbols(centerX, centerY, 1);
     }
     
     rotateVertex(vertex) {
@@ -520,12 +520,12 @@ class HyperspaceEffect {
     
     drawFloatingSymbols(centerX, centerY, progress) {
         const ctx = this.ctx3D;
-        const radius = this.cube.size * 2;
-        const count = 20;
+        const radius = this.cube.size * 4; // Larger radius
+        const count = 60; // More symbols
         
         for (let i = 0; i < count; i++) {
             const angle = (i / count) * Math.PI * 2 + Date.now() * 0.001;
-            const distance = radius + Math.sin(Date.now() * 0.001 + i) * 50;
+            const distance = radius + Math.sin(Date.now() * 0.001 + i) * 100;
             
             const x = centerX + Math.cos(angle) * distance;
             const y = centerY + Math.sin(angle) * distance;
@@ -534,8 +534,10 @@ class HyperspaceEffect {
             ctx.translate(x, y);
             ctx.rotate(Date.now() * 0.001 + i);
             
-            ctx.fillStyle = `rgba(153, 153, 153, ${0.3 + Math.sin(Date.now() * 0.002 + i) * 0.3})`;
-            ctx.font = '20px "Courier New", monospace';
+            // Brighter white symbols
+            const brightness = 0.6 + Math.sin(Date.now() * 0.002 + i) * 0.4;
+            ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+            ctx.font = '24px "Courier New", monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(this.getRandomChar(), 0, 0);
