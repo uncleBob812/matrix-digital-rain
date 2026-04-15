@@ -224,10 +224,29 @@
             }
         }
         
+        // Animation control
+        let matrixAnimationId = null;
+        let isMatrixAnimating = true;
+        
         // Animation loop
         function animate() {
+            if (!isMatrixAnimating) return;
+            
             drawMatrix();
-            requestAnimationFrame(animate);
+            matrixAnimationId = requestAnimationFrame(animate);
+        }
+        
+        function stopMatrixAnimation() {
+            isMatrixAnimating = false;
+            if (matrixAnimationId) {
+                cancelAnimationFrame(matrixAnimationId);
+                matrixAnimationId = null;
+            }
+        }
+        
+        function startMatrixAnimation() {
+            isMatrixAnimating = true;
+            animate();
         }
         
         // Handle window resize
@@ -282,37 +301,55 @@
             }
         }
         
+        // Hyperspace effect
+        let hyperspaceEffect = null;
+        
         // Start button functionality
         document.getElementById('startBtn').addEventListener('click', () => {
-            // Add a subtle glitch effect on click
-            const title = document.querySelector('.main-title');
-            title.style.animation = 'none';
-            
-            setTimeout(() => {
-                title.style.animation = 'chromatic-aberration 0.5s';
-            }, 10);
-            
-            setTimeout(() => {
-                title.style.animation = 'chromatic-aberration 3s infinite';
-            }, 500);
-            
-            // Change button text temporarily
             const btn = document.getElementById('startBtn');
-            const originalText = btn.textContent;
-            btn.textContent = 'LOADING...';
-            btn.disabled = true;
             
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.disabled = false;
-                // In a real scenario, this would navigate to the portfolio
-                alert('Portfolio loading... (This would navigate to the actual portfolio in production)');
-            }, 1500);
+            if (hyperspaceEffect && hyperspaceEffect.isActive) {
+                // Stop hyperspace effect
+                hyperspaceEffect.stop();
+                hyperspaceEffect = null;
+                btn.textContent = 'START';
+                
+                // Restart matrix rain
+                startMatrixAnimation();
+            } else {
+                // Start hyperspace effect
+                btn.textContent = 'RETURN';
+                btn.disabled = true;
+                
+                // Add glitch effect
+                const title = document.querySelector('.main-title');
+                title.style.animation = 'none';
+                
+                setTimeout(() => {
+                    title.style.animation = 'chromatic-aberration 0.5s';
+                }, 10);
+                
+                setTimeout(() => {
+                    title.style.animation = 'chromatic-aberration 3s infinite';
+                    
+                    // Stop matrix rain animation
+                    stopMatrixAnimation();
+                    
+                    // Create and start hyperspace effect
+                    hyperspaceEffect = new HyperspaceEffect(canvas, ctx);
+                    hyperspaceEffect.start();
+                    
+                    // Re-enable button
+                    btn.disabled = false;
+                }, 500);
+            }
         });
         
         // Initialize
         animate();
         typeText(); // Start typing effect
     </script>
+    
+    <script src="hyperspace-effect.js"></script>
 </body>
 </html>
