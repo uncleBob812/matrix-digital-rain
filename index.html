@@ -304,21 +304,26 @@
         
         // Hyperspace effect
         let hyperspaceEffect = null;
+        let isHyperspaceActive = false;
         
         // Start button functionality
         document.getElementById('startBtn').addEventListener('click', () => {
             const btn = document.getElementById('startBtn');
             
-            if (hyperspaceEffect && hyperspaceEffect.isActive) {
+            if (isHyperspaceActive) {
                 // Stop hyperspace effect
-                hyperspaceEffect.stop();
-                hyperspaceEffect = null;
+                if (hyperspaceEffect) {
+                    hyperspaceEffect.stop();
+                    hyperspaceEffect = null;
+                }
+                isHyperspaceActive = false;
                 btn.textContent = 'START';
                 
                 // Restart matrix rain
                 startMatrixAnimation();
             } else {
                 // Start hyperspace effect
+                isHyperspaceActive = true;
                 btn.textContent = 'RETURN';
                 btn.disabled = true;
                 

@@ -237,28 +237,22 @@ class HyperspaceEffect {
     
     drawHyperspace() {
         const ctx = this.ctx3D;
-        const progress = this.transitionProgress;
         const phaseProgress = this.phaseTimer / this.phaseDuration[this.phase];
         
-        // Draw starfield
+        // Clear with black
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, this.canvas3D.width, this.canvas3D.height);
+        
+        // Draw starfield for depth
         this.drawStarfield();
         
-        // Fade out matrix rain in fadeOut phase
-        let matrixOpacity = 1;
         if (this.phase === 'fadeOut') {
-            matrixOpacity = 1 - phaseProgress;
-        }
-        
-        // Update and draw matrix particles
-        for (const particle of this.particles) {
-            // In fadeOut phase, particles slow down and fade
-            if (this.phase === 'fadeOut') {
-                particle.x += Math.cos(particle.angle) * particle.speed * (1 - phaseProgress);
-                particle.y += Math.sin(particle.angle) * particle.speed * (1 - phaseProgress);
-                
-                // Draw fading matrix character
+            // Fade out matrix rain
+            const fadeProgress = 1 - phaseProgress;
+            
+            for (const particle of this.particles) {
                 ctx.save();
-                ctx.globalAlpha = matrixOpacity * particle.opacity;
+                ctx.globalAlpha = fadeProgress * particle.opacity;
                 
                 ctx.fillStyle = '#999999';
                 ctx.font = `${particle.size}px 'Courier New', monospace`;
@@ -267,45 +261,65 @@ class HyperspaceEffect {
                 ctx.fillText(particle.char, particle.x, particle.y);
                 
                 ctx.restore();
-            } 
-            // In hyperspace phase, draw trails
-            else if (this.phase === 'hyperspace') {
-                // Move particles forward fast
-                particle.x += Math.cos(particle.angle) * particle.speed * 10;
-                particle.y += Math.sin(particle.angle) * particle.speed * 10;
+            }
+        } 
+        else if (this.phase === 'hyperspace') {
+            // Superluminal flight effect with perspective lines
+            const centerX = this.canvas3D.width / 2;
+            const centerY = this.canvas3D.height / 2;
+            
+            for (const particle of this.particles) {
+                // Calculate direction from center (perspective effect)
+                const dx = particle.x - centerX;
+                const dy = particle.y - centerY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Draw long trail
-                const trailLength = particle.trailLength * 20;
-                const trailX = particle.x - Math.cos(particle.angle) * trailLength;
-                const trailY = particle.y - Math.sin(particle.angle) * trailLength;
+                // Normalize direction (away from center)
+                const dirX = dx / distance;
+                const dirY = dy / distance;
+                
+                // Move particle away from center (hyperspace flight)
+                const speed = particle.speed * (5 + phaseProgress * 10);
+                particle.x += dirX * speed;
+                particle.y += dirY * speed;
+                
+                // Calculate perspective (lines get longer as they move away)
+                const perspective = 1 + (distance / 1000) * 5;
+                
+                // Draw long perspective trail
+                const trailLength = particle.trailLength * perspective * 30;
+                const trailX = particle.x - dirX * trailLength;
+                const trailY = particle.y - dirY * trailLength;
+                
+                // Create gradient for trail
+                const gradient = ctx.createLinearGradient(trailX, trailY, particle.x, particle.y);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+                gradient.addColorStop(0.3, 'rgba(200, 220, 255, 0.6)');
+                gradient.addColorStop(1, 'rgba(150, 180, 255, 0.9)');
                 
                 ctx.beginPath();
                 ctx.moveTo(trailX, trailY);
                 ctx.lineTo(particle.x, particle.y);
                 
-                const gradient = ctx.createLinearGradient(trailX, trailY, particle.x, particle.y);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-                gradient.addColorStop(1, 'rgba(100, 100, 255, 0.3)');
-                
                 ctx.strokeStyle = gradient;
-                ctx.lineWidth = particle.size / 2;
+                ctx.lineWidth = particle.size / 3;
                 ctx.lineCap = 'round';
                 ctx.stroke();
                 
-                // Draw character
+                // Draw character at the end
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                 ctx.font = `${particle.size}px 'Courier New', monospace`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(particle.char, particle.x, particle.y);
-            }
-            
-            // Reset particle if off screen
-            if (particle.x < -100 || particle.x > this.canvas3D.width + 100 ||
-                particle.y < -100 || particle.y > this.canvas3D.height + 100) {
-                particle.x = Math.random() * this.canvas3D.width;
-                particle.y = Math.random() * this.canvas3D.height;
-                particle.char = this.getRandomChar();
+                
+                // Reset particle if it goes too far
+                if (distance > Math.max(this.canvas3D.width, this.canvas3D.height) * 1.5) {
+                    // Place particle near center again
+                    particle.x = centerX + (Math.random() - 0.5) * 100;
+                    particle.y = centerY + (Math.random() - 0.5) * 100;
+                    particle.char = this.getRandomChar();
+                }
             }
         }
     }
@@ -333,11 +347,15 @@ class HyperspaceEffect {
     
     drawStarfield() {
         const ctx = this.ctx3D;
-        const progress = this.transitionProgress;
         
         for (const star of this.starfieldParticles) {
-            // Move stars toward viewer (hyperspace effect)
-            star.z -= star.speed * progress * 2;
+            // In hyperspace phase, stars move fast toward viewer
+            if (this.phase === 'hyperspace') {
+                star.z -= star.speed * 5;
+            } else {
+                // In other phases, stars twinkle slowly
+                star.z -= star.speed * 0.1;
+            }
             
             // Reset star if it goes behind viewer
             if (star.z < 1) {
@@ -352,19 +370,22 @@ class HyperspaceEffect {
             const y = star.y * scale;
             
             // Draw star
-            ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + progress * 0.5})`;
+            const brightness = 0.3 + Math.sin(Date.now() * 0.001 + star.x) * 0.2;
+            ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
             ctx.beginPath();
             ctx.arc(x, y, star.size * scale, 0, Math.PI * 2);
             ctx.fill();
             
-            // Draw star trail
-            const trailLength = star.speed * 5 * progress;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - trailLength * scale, y);
-            ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + progress * 0.3})`;
-            ctx.lineWidth = star.size * scale / 2;
-            ctx.stroke();
+            // Draw star trail only in hyperspace phase
+            if (this.phase === 'hyperspace') {
+                const trailLength = star.speed * 3;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - trailLength * scale, y);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${brightness * 0.5})`;
+                ctx.lineWidth = star.size * scale / 2;
+                ctx.stroke();
+            }
         }
     }
     
