@@ -53,6 +53,10 @@ class HyperspaceEffect {
             cube: 0 // indefinite
         };
         
+        // Cube appearance animation
+        this.cubeAppearProgress = 0;
+        this.cubeAppearSpeed = 0.008; // ~2 seconds to appear
+        
         // 3D Cube
         this.cube = {
             size: 150,
@@ -80,7 +84,7 @@ class HyperspaceEffect {
         const fontSize = 14;
         const columns = this.matrixCanvas.width / fontSize;
         
-        for (let i = 0; i < columns * 2; i++) { // More particles
+        for (let i = 0; i < columns; i++) { // Reduced particles
             const x = Math.random() * this.matrixCanvas.width;
             const y = Math.random() * this.matrixCanvas.height;
             
@@ -89,14 +93,14 @@ class HyperspaceEffect {
                 y: y,
                 originalX: x,
                 originalY: y,
-                speed: 2 + Math.random() * 4, // Faster
+                speed: 2 + Math.random() * 3, // Moderate speed
                 size: fontSize,
-                trailLength: 100 + Math.random() * 200, // Longer trails
+                trailLength: 50 + Math.random() * 100, // Shorter trails
                 angle: Math.random() * Math.PI * 2,
                 rotation: 0,
                 char: this.getRandomChar(),
-                opacity: 0.5 + Math.random() * 0.5,
-                z: Math.random() * 100 // Depth for 3D effect
+                opacity: 0.4 + Math.random() * 0.4, // Less bright
+                z: Math.random() * 100
             });
         }
     }
@@ -168,6 +172,12 @@ class HyperspaceEffect {
         // Update transition progress based on phase
         this.updateTransitionProgress();
         
+        // Update cube appearance progress
+        if (this.phase === 'cube' && this.cubeAppearProgress < 1) {
+            this.cubeAppearProgress += this.cubeAppearSpeed;
+            if (this.cubeAppearProgress > 1) this.cubeAppearProgress = 1;
+        }
+        
         // Clear 3D canvas
         this.ctx3D.clearRect(0, 0, this.canvas3D.width, this.canvas3D.height);
         
@@ -207,6 +217,11 @@ class HyperspaceEffect {
             if (currentIndex < phases.length - 1) {
                 this.phase = phases[currentIndex + 1];
                 this.phaseTimer = 0;
+                
+                // Reset cube appearance progress when entering cube phase
+                if (this.phase === 'cube') {
+                    this.cubeAppearProgress = 0;
+                }
             }
         }
     }
@@ -291,23 +306,23 @@ class HyperspaceEffect {
                 const trailX = particle.x - dirX * trailLength;
                 const trailY = particle.y - dirY * trailLength;
                 
-                // Create gradient for trail
+                // Create gradient for trail (thinner, less bright)
                 const gradient = ctx.createLinearGradient(trailX, trailY, particle.x, particle.y);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-                gradient.addColorStop(0.3, 'rgba(200, 220, 255, 0.6)');
-                gradient.addColorStop(1, 'rgba(150, 180, 255, 0.9)');
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)');
+                gradient.addColorStop(0.3, 'rgba(200, 220, 255, 0.4)');
+                gradient.addColorStop(1, 'rgba(150, 180, 255, 0.6)');
                 
                 ctx.beginPath();
                 ctx.moveTo(trailX, trailY);
                 ctx.lineTo(particle.x, particle.y);
                 
                 ctx.strokeStyle = gradient;
-                ctx.lineWidth = particle.size / 3;
+                ctx.lineWidth = particle.size / 6; // Thinner lines
                 ctx.lineCap = 'round';
                 ctx.stroke();
                 
                 // Draw character at the end
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                 ctx.font = `${particle.size}px 'Courier New', monospace`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -399,13 +414,16 @@ class HyperspaceEffect {
         const ctx = this.ctxCube;
         const centerX = this.cubeCanvas.width / 2;
         const centerY = this.cubeCanvas.height / 2;
-        const size = this.cube.size;
+        const size = this.cube.size * this.cubeAppearProgress;
         
         // Only draw cube in cube phase
         if (this.phase !== 'cube') return;
         
         // Clear cube canvas
         ctx.clearRect(0, 0, this.cubeCanvas.width, this.cubeCanvas.height);
+        
+        // Don't draw if size is zero
+        if (size <= 0) return;
         
         // Proper 3D cube vertices
         const vertices = [
@@ -445,14 +463,15 @@ class HyperspaceEffect {
             [0, 4], [1, 5], [2, 6], [3, 7]
         ];
         
-        // Draw edges with glowing effect
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.lineWidth = 3;
+        // Draw edges with glowing effect (fade in with progress)
+        const cubeAlpha = 0.9 * this.cubeAppearProgress;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${cubeAlpha})`;
+        ctx.lineWidth = 3 * this.cubeAppearProgress;
         ctx.lineCap = 'round';
         
         // Add glow effect
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.9)';
+        ctx.shadowBlur = 20 * this.cubeAppearProgress;
+        ctx.shadowColor = `rgba(255, 255, 255, ${cubeAlpha})`;
         
         for (const [i, j] of edges) {
             const p1 = projectedVertices[i];
@@ -470,8 +489,8 @@ class HyperspaceEffect {
         // Reset shadow
         ctx.shadowBlur = 0;
         
-        // Add some matrix symbols floating around the cube
-        this.drawFloatingSymbols(centerX, centerY, 1);
+        // Symbols are already drawn in drawSymbolsOnly
+        // this.drawFloatingSymbols(centerX, centerY, 1);
     }
     
     rotateVertex(vertex) {
