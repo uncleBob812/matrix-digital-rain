@@ -15,7 +15,13 @@ class HyperspaceEffect {
         this.canvas3D.style.width = '100%';
         this.canvas3D.style.height = '100%';
         this.canvas3D.style.zIndex = '3';
-        document.body.appendChild(this.canvas3D);
+        // Make sure button is above canvas
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn && startBtn.parentNode) {
+            startBtn.parentNode.appendChild(this.canvas3D);
+        } else {
+            document.body.appendChild(this.canvas3D);
+        }
         
         this.ctx3D = this.canvas3D.getContext('2d');
         this.canvas3D.width = window.innerWidth;
@@ -37,7 +43,9 @@ class HyperspaceEffect {
         
         // Hyperspace particles (frozen matrix symbols stretched into lines)
         this.particles = [];
+        this.starfieldParticles = []; // Additional particles for starfield effect
         this.initParticles();
+        this.initStarfield();
         
         // Animation
         this.animationId = null;
@@ -51,8 +59,8 @@ class HyperspaceEffect {
         const fontSize = 14;
         const columns = this.matrixCanvas.width / fontSize;
         
-        for (let i = 0; i < columns; i++) {
-            const x = i * fontSize;
+        for (let i = 0; i < columns * 2; i++) { // More particles
+            const x = Math.random() * this.matrixCanvas.width;
             const y = Math.random() * this.matrixCanvas.height;
             
             this.particles.push({
@@ -60,13 +68,27 @@ class HyperspaceEffect {
                 y: y,
                 originalX: x,
                 originalY: y,
-                speed: 0.5 + Math.random() * 2,
+                speed: 2 + Math.random() * 4, // Faster
                 size: fontSize,
-                trailLength: 50 + Math.random() * 100,
+                trailLength: 100 + Math.random() * 200, // Longer trails
                 angle: Math.random() * Math.PI * 2,
                 rotation: 0,
                 char: this.getRandomChar(),
-                opacity: 0.3 + Math.random() * 0.7
+                opacity: 0.5 + Math.random() * 0.5,
+                z: Math.random() * 100 // Depth for 3D effect
+            });
+        }
+    }
+    
+    initStarfield() {
+        // Create starfield particles for hyperspace effect
+        for (let i = 0; i < 200; i++) {
+            this.starfieldParticles.push({
+                x: Math.random() * this.canvas3D.width,
+                y: Math.random() * this.canvas3D.height,
+                z: Math.random() * 1000, // Depth
+                speed: 10 + Math.random() * 20,
+                size: 1 + Math.random() * 3
             });
         }
     }
@@ -122,40 +144,61 @@ class HyperspaceEffect {
         const ctx = this.ctx3D;
         const progress = this.transitionProgress;
         
-        // Calculate perspective distortion
-        const perspective = 0.5 + progress * 2;
+        // Draw starfield first (background)
+        this.drawStarfield();
         
-        // Update and draw particles
+        // Calculate perspective distortion for hyperspace effect
+        const perspective = 0.5 + progress * 3;
+        
+        // Update and draw matrix particles
         for (const particle of this.particles) {
-            // Move particles forward (create hyperspace effect)
-            particle.x += Math.cos(particle.angle) * particle.speed * progress * 3;
-            particle.y += Math.sin(particle.angle) * particle.speed * progress * 3;
+            // Move particles toward center for tunnel effect
+            const centerX = this.canvas3D.width / 2;
+            const centerY = this.canvas3D.height / 2;
             
-            // Apply perspective distortion (stretch into lines)
-            const stretch = 1 + progress * 10;
-            const trailX = particle.x - Math.cos(particle.angle) * particle.trailLength * stretch;
-            const trailY = particle.y - Math.sin(particle.angle) * particle.trailLength * stretch;
+            // Calculate direction to center
+            const dx = centerX - particle.x;
+            const dy = centerY - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Draw trail (stretched line)
+            // Normalize direction
+            const dirX = dx / distance;
+            const dirY = dy / distance;
+            
+            // Move particle toward center with speed based on progress
+            particle.x += dirX * particle.speed * progress * 5;
+            particle.y += dirY * particle.speed * progress * 5;
+            
+            // Apply perspective (particles get smaller as they move away)
+            const scale = 1 / (1 + particle.z * 0.01);
+            
+            // Draw stretched trail (hyperspace effect)
+            const trailLength = particle.trailLength * (1 + progress * 20);
+            const trailX = particle.x - dirX * trailLength;
+            const trailY = particle.y - dirY * trailLength;
+            
             ctx.beginPath();
             ctx.moveTo(trailX, trailY);
             ctx.lineTo(particle.x, particle.y);
             
-            // Gradient color from white to gray
+            // Bright gradient for light speed effect
             const gradient = ctx.createLinearGradient(trailX, trailY, particle.x, particle.y);
-            gradient.addColorStop(0, `rgba(255, 255, 255, ${particle.opacity * 0.3})`);
-            gradient.addColorStop(1, `rgba(153, 153, 153, ${particle.opacity * 0.7})`);
+            gradient.addColorStop(0, `rgba(255, 255, 255, ${particle.opacity * 0.8})`);
+            gradient.addColorStop(0.5, `rgba(200, 200, 255, ${particle.opacity * 0.6})`);
+            gradient.addColorStop(1, `rgba(153, 153, 153, ${particle.opacity * 0.3})`);
             
             ctx.strokeStyle = gradient;
-            ctx.lineWidth = particle.size / 4;
+            ctx.lineWidth = (particle.size / 3) * scale;
+            ctx.lineCap = 'round';
             ctx.stroke();
             
-            // Draw character at the end
+            // Draw character at the end (smaller due to perspective)
             ctx.save();
             ctx.translate(particle.x, particle.y);
+            ctx.scale(scale, scale);
             ctx.rotate(particle.rotation);
             
-            ctx.fillStyle = `rgba(153, 153, 153, ${particle.opacity})`;
+            ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
             ctx.font = `${particle.size}px 'Courier New', monospace`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -164,15 +207,57 @@ class HyperspaceEffect {
             ctx.restore();
             
             // Update rotation
-            particle.rotation += 0.02;
+            particle.rotation += 0.05;
             
-            // Reset particle if it goes off screen
-            if (particle.x < -100 || particle.x > this.canvas3D.width + 100 ||
-                particle.y < -100 || particle.y > this.canvas3D.height + 100) {
-                particle.x = particle.originalX;
-                particle.y = particle.originalY;
+            // Increase z for depth effect
+            particle.z += particle.speed * 0.5;
+            
+            // Reset particle if it gets too close to center or off screen
+            if (distance < 50 || particle.z > 1000 ||
+                particle.x < -200 || particle.x > this.canvas3D.width + 200 ||
+                particle.y < -200 || particle.y > this.canvas3D.height + 200) {
+                particle.x = Math.random() * this.canvas3D.width;
+                particle.y = Math.random() * this.canvas3D.height;
+                particle.z = Math.random() * 100;
                 particle.char = this.getRandomChar();
             }
+        }
+    }
+    
+    drawStarfield() {
+        const ctx = this.ctx3D;
+        const progress = this.transitionProgress;
+        
+        for (const star of this.starfieldParticles) {
+            // Move stars toward viewer (hyperspace effect)
+            star.z -= star.speed * progress * 2;
+            
+            // Reset star if it goes behind viewer
+            if (star.z < 1) {
+                star.z = 1000;
+                star.x = Math.random() * this.canvas3D.width;
+                star.y = Math.random() * this.canvas3D.height;
+            }
+            
+            // Calculate position with perspective
+            const scale = 100 / star.z;
+            const x = star.x * scale;
+            const y = star.y * scale;
+            
+            // Draw star
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + progress * 0.5})`;
+            ctx.beginPath();
+            ctx.arc(x, y, star.size * scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw star trail
+            const trailLength = star.speed * 5 * progress;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - trailLength * scale, y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + progress * 0.3})`;
+            ctx.lineWidth = star.size * scale / 2;
+            ctx.stroke();
         }
     }
     
@@ -189,50 +274,71 @@ class HyperspaceEffect {
         const size = this.cube.size;
         const progress = Math.max(0, (this.transitionProgress - 0.5) * 2);
         
-        // Cube vertices
+        // Only draw cube when transition is complete
+        if (progress < 0.3) return;
+        
+        // Proper 3D cube vertices
         const vertices = [
-            [-size, -size, -size],
-            [size, -size, -size],
-            [size, size, -size],
-            [-size, size, -size],
+            // Front face
             [-size, -size, size],
             [size, -size, size],
             [size, size, size],
-            [-size, size, size]
+            [-size, size, size],
+            // Back face
+            [-size, -size, -size],
+            [size, -size, -size],
+            [size, size, -size],
+            [-size, size, -size]
         ];
         
         // Apply rotation
         const rotatedVertices = vertices.map(v => this.rotateVertex(v));
         
-        // Project to 2D with perspective
+        // Project to 2D with proper perspective
         const projectedVertices = rotatedVertices.map(v => {
-            const scale = 300 / (300 + v[2] * progress * 2);
+            const z = v[2] + 500; // Add some distance
+            const scale = 500 / z;
             return {
                 x: centerX + v[0] * scale,
-                y: centerY + v[1] * scale
+                y: centerY + v[1] * scale,
+                z: z
             };
         });
         
-        // Cube edges
+        // Cube edges (connect vertices)
         const edges = [
-            [0, 1], [1, 2], [2, 3], [3, 0], // back face
-            [4, 5], [5, 6], [6, 7], [7, 4], // front face
-            [0, 4], [1, 5], [2, 6], [3, 7]  // connecting edges
+            // Front face
+            [0, 1], [1, 2], [2, 3], [3, 0],
+            // Back face
+            [4, 5], [5, 6], [6, 7], [7, 4],
+            // Connecting edges
+            [0, 4], [1, 5], [2, 6], [3, 7]
         ];
         
-        // Draw edges
-        ctx.strokeStyle = `rgba(255, 255, 255, ${progress * 0.8})`;
-        ctx.lineWidth = 2;
+        // Draw edges with glowing effect
+        ctx.strokeStyle = `rgba(255, 255, 255, ${progress})`;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        
+        // Add glow effect
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
         
         for (const [i, j] of edges) {
             const p1 = projectedVertices[i];
             const p2 = projectedVertices[j];
             
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
+            // Only draw if both vertices are in front of camera
+            if (p1.z > 0 && p2.z > 0) {
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
         }
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
         
         // Add some matrix symbols floating around the cube
         this.drawFloatingSymbols(centerX, centerY, progress);
