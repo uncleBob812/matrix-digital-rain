@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Digital Rain Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .title {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
+            animation: pulse 2s infinite;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+            color: #0a0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: rgba(0, 30, 0, 0.3);
+            border: 1px solid #0f0;
+            border-radius: 10px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px #0f0;
+            background: rgba(0, 40, 0, 0.5);
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #0f0;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.2rem;
+            color: #0a0;
+        }
+
+        .code-preview {
+            background: rgba(0, 20, 0, 0.5);
+            border: 1px solid #0f0;
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: left;
+            width: 100%;
+            max-width: 800px;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            margin-bottom: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .comment {
+            color: #0a0;
+        }
+
+        .keyword {
+            color: #0ff;
+        }
+
+        .string {
+            color: #f0f;
+        }
+
+        .number {
+            color: #ff0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: rgba(0, 30, 0, 0.5);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(0, 50, 0, 0.7);
+            box-shadow: 0 0 15px #0f0;
+            transform: scale(1.05);
+        }
+
+        .footer {
+            margin-top: 3rem;
+            color: #0a0;
+            font-size: 0.9rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .glitch {
+            animation: glitch 0.5s infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    
+    <div class="content">
+        <h1 class="title">MATRIX DIGITAL RAIN</h1>
+        <p class="subtitle">Follow the white rabbit. The system is everywhere...</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="streamCount">256</div>
+                <div class="stat-label">ACTIVE DATA STREAMS</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" id="charCount">1024</div>
+                <div class="stat-label">FALLING CHARACTERS</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" id="speedValue">60</div>
+                <div class="stat-label">FPS / SIMULATION SPEED</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" id="timeValue">00:00</div>
+                <div class="stat-label">SYSTEM UPTIME</div>
+            </div>
+        </div>
+        
+        <div class="code-preview">
+            <div class="code-line"><span class="keyword">function</span> <span class="string">matrixRain</span>() {</div>
+            <div class="code-line">  <span class="keyword">const</span> <span class="string">chars</span> = <span class="string">"01アイウエオカキクケコサシスセソタチツテト"</span>;</div>
+            <div class="code-line">  <span class="keyword">const</span> <span class="string">streams</span> = [];</div>
+            <div class="code-line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">256</span>; i++) {</div>
+            <div class="code-line">    streams.<span class="string">push</span>(<span class="keyword">new</span> <span class="string">Stream</span>(i * <span class="number">20</span>));</div>
+            <div class="code-line">  }</div>
+            <div class="code-line">  <span class="keyword">function</span> <span class="string">animate</span>() {</div>
+            <div class="code-line">    ctx.<span class="string">fillStyle</span> = <span class="string">'rgba(0, 0, 0, 0.05)'</span>;</div>
+            <div class="code-line">    ctx.<span class="string">fillRect</span>(<span class="number">0</span>, <span class="number">0</span>, w, h);</div>
+            <div class="code-line">    streams.<span class="string">forEach</span>(stream => stream.<span class="string">render</span>());</div>
+            <div class="code-line">    requestAnimationFrame(<span class="string">animate</span>);</div>
+            <div class="code-line">  }</div>
+            <div class="code-line">}</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="speedUp">↑ SPEED UP</button>
+            <button class="btn" id="speedDown">↓ SLOW DOWN</button>
+            <button class="btn" id="densityUp">+ INCREASE DENSITY</button>
+            <button class="btn" id="densityDown">- DECREASE DENSITY</button>
+            <button class="btn" id="colorChange">🌀 CHANGE COLOR</button>
+            <button class="btn" id="glitchBtn">⚡ GLITCH EFFECT</button>
+        </div>
+        
+        <div class="footer">
+            <p>SYSTEM STATUS: <span id="status">OPERATIONAL</span> | CONNECTION: <span id="connection">SECURE</span></p>
+            <p>© 2026 MATRIX SIMULATION | FOLLOW THE WHITE RABBIT</p>
+        </div>
+    </div>
+
+    <script>
+        // Matrix Rain Effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas to full window size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Matrix characters - mix of Latin, Japanese, and symbols
+        const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+        const charArray = chars.split("");
+        
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        
+        // Create array for drops
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * fontSize;
+        }
+        
+        // Color settings
+        let matrixColor = '#0f0';
+        let glitchActive = false;
+        let speed = 2;
+        let density = 1;
+        
+        function drawMatrix() {
+            // Semi-transparent black rectangle for trail effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = matrixColor;
+            ctx.font = `${fontSize}px 'Courier New', monospace`;
+            
+            for (let i = 0; i < drops.length * density; i++) {
+                if (i % density === 0) {
+                    const text = charArray[Math.floor(Math.random() * charArray.length)];
+                    
+                    // Random brightness for some characters
+                    const brightness = Math.random() > 0.7 ? 1 : Math.random() * 0.5 + 0.3;
+                    ctx.fillStyle = matrixColor.replace(')', `, ${brightness})`).replace('rgb', 'rgba');
+                    
+                    // Draw character
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    // Move drop down
+                    drops[i] += speed;
+                    
+                    // Reset drop if it goes beyond canvas
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                }
+            }
+            
+            // Glitch effect
+            if (glitchActive && Math.random() > 0.9) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'difference';
+                ctx.fillStyle = '#f0f';
+                ctx.fillRect(
+                    Math.random() * canvas.width - 50,
+                    Math.random() * canvas.height - 50,
+                    100, 100
+                );
+                ctx.restore();
+            }
+        }
+        
+        // Animation loop
+        function animate() {
+            drawMatrix();
+            requestAnimationFrame(animate);
+            updateStats();
+        }
+        
+        // Update statistics
+        let startTime = Date.now();
+        let streamCount = 256;
+        let charCount = 1024;
+        
+        function updateStats() {
+            const now = Date.now();
+            const elapsed = Math.floor((now - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            
+            document.getElementById('timeValue').textContent = `${minutes}:${seconds}`;
+            document.getElementById('streamCount').textContent = Math.floor(columns * density);
+            document.getElementById('charCount').textContent = Math.floor(drops.length * density * 20);
+            document.getElementById('speedValue').textContent = Math.floor(60 / speed);
+        }
+        
+        // Control functions
+        document.getElementById('speedUp').addEventListener('click', () => {
+            speed = Math.min(speed + 0.5, 10);
+        });
+        
+        document.getElementById('speedDown').addEventListener('click', () => {
+            speed = Math.max(speed - 0.5, 0.5);
+        });
+        
+        document.getElementById('densityUp').addEventListener('click', () => {
+            density = Math.min(density + 0.2, 3);
+        });
+        
+        document.getElementById('densityDown').addEventListener('click', () => {
+            density = Math.max(density - 0.2, 0.2);
+        });
+        
+        document.getElementById('colorChange').addEventListener('click', () => {
+            const colors = ['#0f0', '#0ff', '#f0f', '#ff0', '#f00', '#0af'];
+            matrixColor = colors[Math.floor(Math.random() * colors.length)];
+            document.getElementById('status').textContent = 'COLOR CHANGE';
+            setTimeout(() => {
+                document.getElementById('status').textContent = 'OPERATIONAL';
+            }, 1000);
+        });
+        
+        document.getElementById('glitchBtn').addEventListener('click', () => {
+            glitchActive = !glitchActive;
+            document.getElementById('glitchBtn').classList.toggle('glitch', glitchActive);
+            document.getElementById('status').textContent = glitchActive ? 'GLITCH ACTIVE' : 'OPERATIONAL';
+            document.getElementById('connection').textContent = glitchActive ? 'UNSTABLE' : 'SECURE';
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Reset drops array
+            const newColumns = canvas.width / fontSize;
+            drops.length = 0;
+            for (let i = 0; i < newColumns; i++) {
+                drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * fontSize;
+            }
+        });
+        
+        // Initialize
+        animate();
+        
+        // Random status updates
+        setInterval(() => {
+            const statuses = ['OPERATIONAL', 'SCANNING', 'ENCRYPTING', 'DECODING', 'ANALYZING'];
+            const connections = ['SECURE', 'ENCRYPTED', 'PROTECTED', 'SHIELDED'];
+            
+            if (!glitchActive && Math.random() > 0.7) {
+                document.getElementById('status').textContent = 
+                    statuses[Math.floor(Math.random() * statuses.length)];
+                
+                setTimeout(() => {
+                    if (!glitchActive) {
+                        document.getElementById('status').textContent = 'OPERATIONAL';
+                    }
+                }, 1000);
+            }
+            
+            if (!glitchActive && Math.random() > 0.8) {
+                document.getElementById('connection').textContent = 
+                    connections[Math.floor(Math.random() * connections.length)];
+                
+                setTimeout(() => {
+                    if (!glitchActive) {
+                        document.getElementById('connection').textContent = 'SECURE';
+                    }
+                }, 1500);
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
