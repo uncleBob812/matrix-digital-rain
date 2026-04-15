@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Digital Rain Effect</title>
+    <title>UX Designer Portfolio | Matrix Style</title>
     <style>
         * {
             margin: 0;
@@ -32,165 +32,124 @@
         .content {
             position: relative;
             z-index: 2;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-        }
-
-        .title {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
-            animation: pulse 2s infinite;
-        }
-
-        .subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 3rem;
-            color: #0a0;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            width: 100%;
-            margin: 3rem 0;
-        }
-
-        .stat-card {
-            background: rgba(0, 30, 0, 0.3);
-            border: 1px solid #0f0;
-            border-radius: 10px;
+            text-align: center;
             padding: 2rem;
-            transition: all 0.3s;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 20px #0f0;
-            background: rgba(0, 40, 0, 0.5);
-        }
-
-        .stat-value {
-            font-size: 3rem;
+        .main-title {
+            font-size: 5rem;
             font-weight: bold;
-            color: #0f0;
-            margin-bottom: 0.5rem;
+            color: #ffffff;
+            margin-bottom: 3rem;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+            letter-spacing: 2px;
+            position: relative;
         }
 
-        .stat-label {
-            font-size: 1.2rem;
-            color: #0a0;
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            height: 5rem;
+            background-color: #0f0;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+            vertical-align: middle;
         }
 
-        .code-preview {
-            background: rgba(0, 20, 0, 0.5);
-            border: 1px solid #0f0;
-            border-radius: 10px;
-            padding: 2rem;
-            margin: 2rem 0;
-            text-align: left;
-            width: 100%;
-            max-width: 800px;
-            overflow-x: auto;
-        }
-
-        .code-line {
-            margin-bottom: 0.5rem;
-            font-family: 'Courier New', monospace;
-        }
-
-        .comment {
-            color: #0a0;
-        }
-
-        .keyword {
-            color: #0ff;
-        }
-
-        .string {
-            color: #f0f;
-        }
-
-        .number {
-            color: #ff0;
-        }
-
-        .controls {
-            display: flex;
-            gap: 1rem;
-            margin: 2rem 0;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .btn {
-            background: rgba(0, 30, 0, 0.5);
-            border: 1px solid #0f0;
-            color: #0f0;
-            padding: 1rem 2rem;
-            border-radius: 5px;
+        .start-btn {
+            background: transparent;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            padding: 1.5rem 4rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 3px;
             cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn:hover {
-            background: rgba(0, 50, 0, 0.7);
-            box-shadow: 0 0 15px #0f0;
-            transform: scale(1.05);
+        .start-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+            border-color: #0f0;
+            color: #0f0;
+            transform: translateY(-5px);
         }
 
-        .footer {
-            margin-top: 3rem;
-            color: #0a0;
-            font-size: 0.9rem;
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.2), transparent);
+            transition: left 0.5s;
         }
 
-        @keyframes pulse {
+        .start-btn:hover::before {
+            left: 100%;
+        }
+
+        @keyframes blink {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            50% { opacity: 0; }
         }
 
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
+        @keyframes chromatic-aberration {
+            0% {
+                text-shadow: 
+                    -1px -1px 0 rgba(255, 0, 0, 0.5),
+                    1px 1px 0 rgba(0, 255, 255, 0.5);
+            }
+            50% {
+                text-shadow: 
+                    1px -1px 0 rgba(0, 255, 0, 0.5),
+                    -1px 1px 0 rgba(255, 0, 255, 0.5);
+            }
+            100% {
+                text-shadow: 
+                    -1px -1px 0 rgba(255, 0, 0, 0.5),
+                    1px 1px 0 rgba(0, 255, 255, 0.5);
+            }
         }
 
-        .glitch {
-            animation: glitch 0.5s infinite;
+        .glitch-text {
+            animation: chromatic-aberration 3s infinite;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .title {
-                font-size: 2.5rem;
+            .main-title {
+                font-size: 3rem;
             }
             
-            .subtitle {
+            .cursor {
+                height: 3rem;
+            }
+            
+            .start-btn {
+                padding: 1rem 2.5rem;
                 font-size: 1.2rem;
             }
-            
-            .stats {
-                grid-template-columns: 1fr;
+        }
+        
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: 2.2rem;
             }
             
-            .stat-value {
-                font-size: 2rem;
+            .start-btn {
+                padding: 0.8rem 2rem;
+                font-size: 1rem;
             }
         }
     </style>
@@ -199,60 +158,13 @@
     <canvas id="matrix"></canvas>
     
     <div class="content">
-        <h1 class="title">MATRIX DIGITAL RAIN</h1>
-        <p class="subtitle">Follow the white rabbit. The system is everywhere...</p>
+        <h1 class="main-title glitch-text">
+            I'm UX Designer<span class="cursor"></span>
+        </h1>
         
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value" id="streamCount">256</div>
-                <div class="stat-label">ACTIVE DATA STREAMS</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-value" id="charCount">1024</div>
-                <div class="stat-label">FALLING CHARACTERS</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-value" id="speedValue">60</div>
-                <div class="stat-label">FPS / SIMULATION SPEED</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-value" id="timeValue">00:00</div>
-                <div class="stat-label">SYSTEM UPTIME</div>
-            </div>
-        </div>
-        
-        <div class="code-preview">
-            <div class="code-line"><span class="keyword">function</span> <span class="string">matrixRain</span>() {</div>
-            <div class="code-line">  <span class="keyword">const</span> <span class="string">chars</span> = <span class="string">"01アイウエオカキクケコサシスセソタチツテト"</span>;</div>
-            <div class="code-line">  <span class="keyword">const</span> <span class="string">streams</span> = [];</div>
-            <div class="code-line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">256</span>; i++) {</div>
-            <div class="code-line">    streams.<span class="string">push</span>(<span class="keyword">new</span> <span class="string">Stream</span>(i * <span class="number">20</span>));</div>
-            <div class="code-line">  }</div>
-            <div class="code-line">  <span class="keyword">function</span> <span class="string">animate</span>() {</div>
-            <div class="code-line">    ctx.<span class="string">fillStyle</span> = <span class="string">'rgba(0, 0, 0, 0.05)'</span>;</div>
-            <div class="code-line">    ctx.<span class="string">fillRect</span>(<span class="number">0</span>, <span class="number">0</span>, w, h);</div>
-            <div class="code-line">    streams.<span class="string">forEach</span>(stream => stream.<span class="string">render</span>());</div>
-            <div class="code-line">    requestAnimationFrame(<span class="string">animate</span>);</div>
-            <div class="code-line">  }</div>
-            <div class="code-line">}</div>
-        </div>
-        
-        <div class="controls">
-            <button class="btn" id="speedUp">↑ SPEED UP</button>
-            <button class="btn" id="speedDown">↓ SLOW DOWN</button>
-            <button class="btn" id="densityUp">+ INCREASE DENSITY</button>
-            <button class="btn" id="densityDown">- DECREASE DENSITY</button>
-            <button class="btn" id="colorChange">🌀 CHANGE COLOR</button>
-            <button class="btn" id="glitchBtn">⚡ GLITCH EFFECT</button>
-        </div>
-        
-        <div class="footer">
-            <p>SYSTEM STATUS: <span id="status">OPERATIONAL</span> | CONNECTION: <span id="connection">SECURE</span></p>
-            <p>© 2026 MATRIX SIMULATION | FOLLOW THE WHITE RABBIT</p>
-        </div>
+        <button class="start-btn" id="startBtn">
+            START
+        </button>
     </div>
 
     <script>
@@ -277,12 +189,11 @@
             drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * fontSize;
         }
         
-        // Color settings
+        // Color settings - green matrix effect
         let matrixColor = '#0f0';
-        let glitchActive = false;
         let speed = 2;
         let density = 1;
-        
+
         function drawMatrix() {
             // Semi-transparent black rectangle for trail effect
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
@@ -311,77 +222,13 @@
                     }
                 }
             }
-            
-            // Glitch effect
-            if (glitchActive && Math.random() > 0.9) {
-                ctx.save();
-                ctx.globalCompositeOperation = 'difference';
-                ctx.fillStyle = '#f0f';
-                ctx.fillRect(
-                    Math.random() * canvas.width - 50,
-                    Math.random() * canvas.height - 50,
-                    100, 100
-                );
-                ctx.restore();
-            }
         }
         
         // Animation loop
         function animate() {
             drawMatrix();
             requestAnimationFrame(animate);
-            updateStats();
         }
-        
-        // Update statistics
-        let startTime = Date.now();
-        let streamCount = 256;
-        let charCount = 1024;
-        
-        function updateStats() {
-            const now = Date.now();
-            const elapsed = Math.floor((now - startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            
-            document.getElementById('timeValue').textContent = `${minutes}:${seconds}`;
-            document.getElementById('streamCount').textContent = Math.floor(columns * density);
-            document.getElementById('charCount').textContent = Math.floor(drops.length * density * 20);
-            document.getElementById('speedValue').textContent = Math.floor(60 / speed);
-        }
-        
-        // Control functions
-        document.getElementById('speedUp').addEventListener('click', () => {
-            speed = Math.min(speed + 0.5, 10);
-        });
-        
-        document.getElementById('speedDown').addEventListener('click', () => {
-            speed = Math.max(speed - 0.5, 0.5);
-        });
-        
-        document.getElementById('densityUp').addEventListener('click', () => {
-            density = Math.min(density + 0.2, 3);
-        });
-        
-        document.getElementById('densityDown').addEventListener('click', () => {
-            density = Math.max(density - 0.2, 0.2);
-        });
-        
-        document.getElementById('colorChange').addEventListener('click', () => {
-            const colors = ['#0f0', '#0ff', '#f0f', '#ff0', '#f00', '#0af'];
-            matrixColor = colors[Math.floor(Math.random() * colors.length)];
-            document.getElementById('status').textContent = 'COLOR CHANGE';
-            setTimeout(() => {
-                document.getElementById('status').textContent = 'OPERATIONAL';
-            }, 1000);
-        });
-        
-        document.getElementById('glitchBtn').addEventListener('click', () => {
-            glitchActive = !glitchActive;
-            document.getElementById('glitchBtn').classList.toggle('glitch', glitchActive);
-            document.getElementById('status').textContent = glitchActive ? 'GLITCH ACTIVE' : 'OPERATIONAL';
-            document.getElementById('connection').textContent = glitchActive ? 'UNSTABLE' : 'SECURE';
-        });
         
         // Handle window resize
         window.addEventListener('resize', () => {
@@ -396,36 +243,36 @@
             }
         });
         
+        // Start button functionality
+        document.getElementById('startBtn').addEventListener('click', () => {
+            // Add a subtle glitch effect on click
+            const title = document.querySelector('.main-title');
+            title.style.animation = 'none';
+            
+            setTimeout(() => {
+                title.style.animation = 'chromatic-aberration 0.5s';
+            }, 10);
+            
+            setTimeout(() => {
+                title.style.animation = 'chromatic-aberration 3s infinite';
+            }, 500);
+            
+            // Change button text temporarily
+            const btn = document.getElementById('startBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'LOADING...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                // In a real scenario, this would navigate to the portfolio
+                alert('Portfolio loading... (This would navigate to the actual portfolio in production)');
+            }, 1500);
+        });
+        
         // Initialize
         animate();
-        
-        // Random status updates
-        setInterval(() => {
-            const statuses = ['OPERATIONAL', 'SCANNING', 'ENCRYPTING', 'DECODING', 'ANALYZING'];
-            const connections = ['SECURE', 'ENCRYPTED', 'PROTECTED', 'SHIELDED'];
-            
-            if (!glitchActive && Math.random() > 0.7) {
-                document.getElementById('status').textContent = 
-                    statuses[Math.floor(Math.random() * statuses.length)];
-                
-                setTimeout(() => {
-                    if (!glitchActive) {
-                        document.getElementById('status').textContent = 'OPERATIONAL';
-                    }
-                }, 1000);
-            }
-            
-            if (!glitchActive && Math.random() > 0.8) {
-                document.getElementById('connection').textContent = 
-                    connections[Math.floor(Math.random() * connections.length)];
-                
-                setTimeout(() => {
-                    if (!glitchActive) {
-                        document.getElementById('connection').textContent = 'SECURE';
-                    }
-                }, 1500);
-            }
-        }, 3000);
     </script>
 </body>
 </html>
