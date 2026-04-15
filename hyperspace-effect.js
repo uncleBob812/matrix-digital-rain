@@ -47,10 +47,10 @@ class HyperspaceEffect {
         this.phase = 'fadeOut'; // fadeOut → hyperspace → symbols → cube
         this.phaseTimer = 0;
         this.phaseDuration = {
-            fadeOut: 1000, // 1 second
-            hyperspace: 5000, // 5 seconds
-            symbols: 2000, // 2 seconds
-            cube: 0 // indefinite
+            fadeOut: 1000,    // 1 second
+            hyperspace: 2000, // 2 seconds (was 5)
+            symbols: 500,     // 0.5 seconds (was 2)
+            cube: 0           // indefinite
         };
         
         // Cube appearance animation
@@ -84,7 +84,7 @@ class HyperspaceEffect {
         const fontSize = 14;
         const columns = this.matrixCanvas.width / fontSize;
         
-        for (let i = 0; i < columns; i++) { // Reduced particles
+        for (let i = 0; i < columns * 3; i++) { // More particles for starfield
             const x = Math.random() * this.matrixCanvas.width;
             const y = Math.random() * this.matrixCanvas.height;
             
@@ -99,7 +99,7 @@ class HyperspaceEffect {
                 angle: Math.random() * Math.PI * 2,
                 rotation: 0,
                 char: this.getRandomChar(),
-                opacity: 0.4 + Math.random() * 0.4, // Less bright
+                opacity: 0.5 + Math.random() * 0.5, // Brighter
                 z: Math.random() * 100
             });
         }
@@ -107,7 +107,7 @@ class HyperspaceEffect {
     
     initStarfield() {
         // Create starfield particles for hyperspace effect
-        for (let i = 0; i < 200; i++) {
+        for (let i = 0; i < 400; i++) {
             this.starfieldParticles.push({
                 x: Math.random() * this.canvas3D.width,
                 y: Math.random() * this.canvas3D.height,
@@ -306,11 +306,11 @@ class HyperspaceEffect {
                 const trailX = particle.x - dirX * trailLength;
                 const trailY = particle.y - dirY * trailLength;
                 
-                // Create gradient for trail (thinner, less bright)
+                // Create gradient for trail (white)
                 const gradient = ctx.createLinearGradient(trailX, trailY, particle.x, particle.y);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)');
-                gradient.addColorStop(0.3, 'rgba(200, 220, 255, 0.4)');
-                gradient.addColorStop(1, 'rgba(150, 180, 255, 0.6)');
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+                gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0.9)');
                 
                 ctx.beginPath();
                 ctx.moveTo(trailX, trailY);
